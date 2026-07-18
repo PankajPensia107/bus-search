@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Haryana Roadways Timetable</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Component Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
+            --secondary: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --card-blur: rgba(255, 255, 255, 0.85);
+            --text: #0f172a;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --light-gray: #f1f5f9;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05), 0 20px 25px -5px rgba(0, 0, 0, 0.02);
+            --radius: 16px;
+            --font-stack: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body.dark {
+            --bg: #090d16;
+            --card: #131c2e;
+            --card-blur: rgba(19, 28, 46, 0.85);
+            --text: #f8fafc;
+            --text-light: #94a3b8;
+            --border: #22314d;
+            --light-gray: #1b263b;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-stack);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* App Header Shell */
+        .navbar {
+            background: var(--card-blur) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+        }
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--text) !important;
+            letter-spacing: -0.5px;
+        }
+
+        /* Micro Dashboard Grid */
+        .dashboard-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dashboard-card h6 {
+            color: var(--text-light);
+            margin: 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .dashboard-card h5 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-top: 6px;
+            margin-bottom: 0;
+        }
+
+        /* Action Center Control Pod */
+        .search-card {
+            background: var(--card-blur);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        /* Rounded UI Components */
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 10px 20px;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:hover, .btn-primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+        .btn-action-round {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light-gray);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-swap-circle {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .btn-swap-circle:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Advanced Interactive Engine Matrix */
+        .data-card {
+            background: var(--card);
+            border-radius: 20px;
+            border: 1px solid var(--border) !important;
+        }
+        .table-responsive {
+            border: none;
+        }
+        .table {
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .table thead th {
+            background: var(--light-gray) !important;
+            color: var(--text-light);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 14px 16px;
+        }
+        .table tbody tr {
+            background: var(--card);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .table tbody tr:hover {
+            background: var(--light-gray) !important;
+            transform: scale(1.002);
+        }
+        .table tbody td {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .table tbody tr td:first-child {
+            border-left: 1px solid var(--border);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+        .table tbody tr td:last-child {
+            border-right: 1px solid var(--border);
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        /* Badge Micro-layouts */
+        .badge-ui {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .badge-time { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+        .badge-type { background: rgba(79, 70, 229, 0.1); color: var(--secondary); }
+        .badge-depot { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+        /* Unified Linear Route Navigation Node Engine */
+        .route-timeline-container {
+            position: relative;
+            padding-left: 24px;
+            margin-top: 15px;
+        }
+        .route-timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: var(--border);
+        }
+        .node-stop-card {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+        }
+        .node-stop-card::before {
+            content: '';
+            position: absolute;
+            left: -21px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            border: 2px solid var(--card);
+            box-shadow: 0 0 0 2px var(--success);
+            z-index: 2;
+        }
+
+        /* Master Native Loader Structure */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 13, 22, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 99999;
+        }
+        .spinner-elastic {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-card, .search-card, .data-card {
+            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Select2 Custom Overrides for Modern Clean Appearance */
+        .select2-container--default .select2-selection--single {
+            height: 50px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            background: var(--card);
+        }
+        .select2-container--default .select2-selection__rendered {
+            color: var(--text);
+            line-height: 28px;
+            font-weight: 600;
+        }
+        .select2-dropdown {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+        .select2-search--dropdown .select2-search__field {
+            background: var(--light-gray);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        /* Custom Utilities */
+        .font-xs { font-size: 0.725rem !important; }
+        .font-sm { font-size: 0.85rem !important; }
+        .bg-light-gray { background-color: var(--light-gray) !important; }
+        .btn-light-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+        /* PWA App Shell Mobile Optimization Layer */
+        @media(max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            .container-fluid {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+            .search-card {
+                padding: 16px;
+                border-radius: 16px;
+            }
+            .btn-swap-circle {
+                margin: -4px 0;
+                z-index: 10;
+            }
+            .table tbody td {
+                padding: 12px;
+            }
+            /* Fixed Dynamic Native Overlay Modal for Mobile Viewports */
+            .modal-fullscreen-sm-down .modal-content {
+                border-radius: 24px 24px 0 0 !important;
+            }
+            .modal-dialog-fullscreen-sm-down {
+                margin: 0;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        }
+
+        /* DataTables Button Structural Alignment Overrides */
+        .dt-buttons .btn {
+            padding: 6px 14px !important;
+            font-size: 0.8rem !important;
+            border-radius: 8px !important;
+        }
+        .dataTables_filter input {
+            border-radius: 8px !important;
+            border: 1px solid var(--border) !important;
+            background: var(--card) !important;
+            color: var(--text) !important;
+        }
+
+        /* Custom Variable Extensions for Theme Stability */
+        body.dark .text-dark-theme {
+            color: #f8fafc !important;
+        }
+        body:not(.dark) .text-dark-theme {
+            color: #0f172a !important;
+        }
+
+        /* Base Desktop Bottom Sheet Modal Override */
+        .bottom-sheet-modal .modal-content {
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            background: var(--card);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .drawer-handle {
+            display: none;
+        }
+
+        /* Highly Responsive Mobile PWA View Layer */
+        @media (max-width: 576px) {
+            .bottom-sheet-modal {
+                display: flex !important;
+                align-items: flex-end;
+                justify-content: center;
+                padding-right: 0 !important;
+            }
+
+            .bottom-sheet-modal .modal-dialog {
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+                /* Device key-safe calculations for browsers and iOS wrapper shells */
+                max-height: 85vh;
+                display: flex;
+                flex-direction: column;
+                transform: translateY(100%);
+                transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .bottom-sheet-modal.show .modal-dialog {
+                transform: translateY(0);
+            }
+
+            .bottom-sheet-modal .modal-content {
+                border-radius: 28px 28px 0 0 !important;
+                border: none;
+                border-top: 1px solid var(--border);
+                height: 100%;
+                padding-bottom: env(safe-area-inset-bottom, 16px);
+            }
+
+            /* PWA Native Look Mobile Drag Bar Indicator */
+            .drawer-handle {
+                display: block;
+                width: 44px;
+                height: 5px;
+                background-color: var(--text-light);
+                opacity: 0.4;
+                border-radius: 3px;
+                margin: 12px auto 8px auto;
+                cursor: pointer;
+            }
+
+            .bottom-sheet-modal .modal-body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Enhanced Node Timeline Cards Custom Look */
+        .node-stop-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .node-stop-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--success);
+        }
+
+        .route-timeline-container::before {
+            background: linear-gradient(180deg, var(--success), var(--primary)) !important;
+            width: 3px !important;
+            left: 6px !important;
+        }
+
+        .node-stop-card::before {
+            background: var(--card) !important;
+            border: 3px solid var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            width: 14px !important;
+            height: 14px !important;
+            left: -23px !important;
+        }
+
+        /* Fullscreen Structural UI Canvas Styling */
+        .bottom-sheet-modal .modal-content {
+            background: var(--card) !important;
+            height: 100vh;
+        }
+
+        .max-width-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-top: 10px;
+        }
+
+        /* Timeline Layout Engine Updates */
+        .node-stop-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* PC vs Mobile Fullscreen Behavior Matrix */
+        @media (min-width: 577px) {
+            .bottom-sheet-modal .modal-dialog {
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                height: 100vh !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .bottom-sheet-modal .modal-dialog {
+                max-height: 100vh !important;
+                height: 100vh !important;
+            }
+            .bottom-sheet-modal .modal-content {
+                border-radius: 0px !important; /* Mobile standalone layout look */
+            }
+            .drawer-handle {
+                width: 44px;
+                height: 5px;
+                background-color: var(--text-light);
+                opacity: 0.4;
+                border-radius: 3px;
+                margin: 12px auto 8px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- App Header Shell -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container-fluid px-3">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-bus-front-fill me-2 text-warning"></i>
+            <span>HR Roadways <span class="badge bg-warning text-dark font-xs ms-1">PWA</span></span>
+        </a>
+        <button id="themeBtn" class="btn btn-action-round" aria-label="Toggle theme">
+            <i class="bi bi-moon-stars-fill"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- App Main Container Container -->
+<div class="container-fluid py-3 px-3 scroll-container-pad">
+
+    <!-- Live Dashboard Metric Cards -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6>Boarding</h6>
+                    <i class="bi bi-geo-alt text-primary"></i>
+                </div>
+                <h5 id="cardBoarding" class="text-truncate">-</h5>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6>Destination</h6>
+                    <i class="bi bi-flag text-danger"></i>
+                </div>
+                <h5 id="cardDestination" class="text-truncate">-</h5>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6>Buses Available</h6>
+                    <i class="bi bi-bus-front text-success"></i>
+                </div>
+                <h5 id="cardBus">0</h5>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6>Live Clock</h6>
+                    <i class="bi bi-clock text-warning"></i>
+                </div>
+                <h5 id="liveClock">--:--</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Interaction Query Panel -->
+    <div class="search-card mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-12 col-md-5">
+                <label class="form-label d-flex align-items-center">
+                    <i class="bi bi-geo-alt-fill me-1 text-primary"></i> Boarding Station
+                </label>
+                <select id="boardingSelect" class="form-select"></select>
+            </div>
+
+            <div class="col-12 col-md-2 text-center my-md-0 my-2">
+                <button id="swapBtn" class="btn btn-outline-secondary btn-swap-circle">
+                    <i class="bi bi-arrow-left-right d-none d-md-inline"></i>
+                    <i class="bi bi-arrow-down-up d-inline d-md-none"></i>
+                </button>
+            </div>
+
+            <div class="col-12 col-md-5">
+                <label class="form-label d-flex align-items-center">
+                    <i class="bi bi-flag-fill me-1 text-danger"></i> Destination Station
+                </label>
+                <select id="destinationSelect" class="form-select"></select>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button id="searchBtn" class="btn btn-primary w-100 py-3 btn-glow">
+                <i class="bi bi-search me-2"></i> Search Timetable
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Visualization Sheet Container -->
+    <div class="card data-card shadow-sm border-0">
+        <div class="card-header border-0 d-flex justify-content-between align-items-center bg-transparent py-3">
+            <h5 class="mb-0 fw-bold d-flex align-items-center">
+                <i class="bi bi-calendar3 me-2 text-primary"></i>Today's Fleet Matrix
+            </h5>
+            <button id="refreshBtn" class="btn btn-light-success btn-sm px-3">
+                <i class="bi bi-arrow-repeat me-1"></i> Sync
+            </button>
+        </div>
+        <div class="card-body px-2 px-md-3 pt-0">
+            <div class="table-responsive">
+                <table id="busTable" class="table align-middle w-100">
+                    <thead>
+                    <tr>
+                        <th>Departure</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Route / Trip Name</th>
+                        <th>Bus No.</th>
+                        <th>Type</th>
+                        <th>Depot</th>
+                        <th>Tracking</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Native Full Screen Responsive Route Shell -->
+<div class="modal fade bottom-sheet-modal" id="routeModal" tabindex="-1" aria-hidden="true">
+    <!-- Updated: Added modal-fullscreen class for absolute full canvas scale -->
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-0">
+            <!-- Mobile Navigation Drag Indicator -->
+            <div class="drawer-handle d-md-none" data-bs-dismiss="modal"></div>
+
+            <div class="modal-header border-0 px-4 pt-3 pb-3 bg-light-gray">
+                <h5 class="modal-title fw-800 d-flex align-items-center text-dark-theme">
+                    <i class="bi bi-signpost-split-fill me-2 text-success"></i> Fleet Route Canvas
+                </h5>
+                <!-- Desktop Visible Native Close Action Button -->
+                <button type="button" class="btn-close text-dark-theme" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body px-4 py-4">
+                <!-- Sleek Mini Dashboard Layout Matrix -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 text-center bg-light-gray border border-light">
+                            <small class="text-muted d-block font-xs fw-medium mb-1">Trip Details</small>
+                            <strong id="modalTripName" class="text-truncate d-block font-sm text-dark-theme">-</strong>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 text-center bg-light-gray border border-light">
+                            <small class="text-muted d-block font-xs fw-medium mb-1">Vehicle Matrix</small>
+                            <strong id="modalVehicleNo" class="text-truncate d-block font-sm text-dark-theme">-</strong>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded-3 text-center bg-light-gray border border-light">
+                            <small class="text-muted d-block font-xs fw-medium mb-1">Total Stops</small>
+                            <strong id="modalStopCount" class="font-sm text-dark-theme fw-bold">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Elegant Loader -->
+                <div id="modalLoadingRoute" class="text-center py-5">
+                    <div class="spinner-border text-success" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                    <p class="mt-3 text-muted fw-semibold font-sm tracking-wide">Fetching sequence nodes...</p>
+                </div>
+
+                <!-- Modern Segmented Route Timeline Container -->
+                <div id="modalTimeline" class="route-timeline-container d-none max-width-container">
+                    <!-- Cards will be generated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="loadingOverlay">
+    <div class="spinner-elastic"></div>
+    <h6 class="text-white mt-3 tracking-wide fw-medium">SYNCHRONIZING FLEET MATRIX...</h6>
+</div>
+
+<!-- Dependency Orchestration -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script>
+    const TOKEN = "Bearer 5FC74043-4CBC-EF11-9194-98F2B32FB60F";
+    const STATION_API = "https://api.hrtransport.org/misInfo/TimetableStationList/";
+    const TIMETABLE_API = "https://api.hrtransport.org/misInfo/TimetableList";
+    const ROUTE_API = "https://api.hrtransport.org/misInfo/TimetableStationDetail/";
+
+    let boardingStation = null;
+    let destinationStation = null;
+    let table = null;
+
+    $(document).ready(function () {
+        initThemeEngine();
+        initLiveClock();
+        initializeSelect2();
+        initializeDataTable();
+        registerEventHandlers();
+    });
+
+    /* PWA Theme Control Script Infrastructure */
+    function initThemeEngine() {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        if (savedTheme === "dark") {
+            $("body").addClass("dark");
+            $("#themeBtn i").removeClass("bi-moon-stars-fill").addClass("bi-sun-fill");
+        }
+
+        $("#themeBtn").click(function () {
+            $("body").toggleClass("dark");
+            const isDark = $("body").hasClass("dark");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            $(this).find("i").toggleClass("bi-moon-stars-fill bi-sun-fill");
+        });
+    }
+
+    function initLiveClock() {
+        const updateTime = () => {
+            const now = new Date();
+            $("#liveClock").text(now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true }));
+        };
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
+
+    function initializeSelect2() {
+        const setupSelect = (elementId, placeholderStr) => {
+            $(elementId).select2({
+                placeholder: placeholderStr,
+                minimumInputLength: 3,
+                allowClear: true,
+                ajax: {
+                    transport: (params, success, failure) => {
+                        fetch(STATION_API + params.data.term, { headers: { Authorization: TOKEN } })
+                            .then(res => res.json()).then(success).catch(failure);
+                    },
+                    processResults: (data) => ({
+                        results: data.model.map(item => ({ id: item.stationID, text: item.stationName, station: item }))
+                    })
+                }
+            });
+        };
+
+        setupSelect("#boardingSelect", "Select Departure Station");
+        setupSelect("#destinationSelect", "Select Target Destination");
+    }
+
+    function initializeDataTable() {
+        table = $("#busTable").DataTable({
+            responsive: true,
+            destroy: true,
+            pageLength: 10,
+            dom: '<"d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"Bf>rtip',
+            buttons: [
+                { extend: 'excel', text: '<i class="bi bi-file-earmark-excel me-1"></i> Excel', className: 'btn btn-sm btn-success' },
+                { extend: 'pdf', text: '<i class="bi bi-file-earmark-pdf me-1"></i> PDF', className: 'btn btn-sm btn-danger' }
+            ],
+            language: { search: "", searchPlaceholder: "Filter trips..." }
+        });
+    }
+
+    function registerEventHandlers() {
+        $("#boardingSelect").on("select2:select", e => {
+            boardingStation = e.params.data.station;
+            $("#cardBoarding").text(boardingStation.stationName);
+        });
+
+        $("#destinationSelect").on("select2:select", e => {
+            destinationStation = e.params.data.station;
+            $("#cardDestination").text(destinationStation.stationName);
+        });
+
+        $("#swapBtn").click(() => {
+            if (!boardingStation || !destinationStation) return;
+            const temp = boardingStation;
+            boardingStation = destinationStation;
+            destinationStation = temp;
+
+            $("#boardingSelect").append(new Option(boardingStation.stationName, boardingStation.stationID, true, true)).trigger("change");
+            $("#destinationSelect").append(new Option(destinationStation.stationName, destinationStation.stationID, true, true)).trigger("change");
+
+            $("#cardBoarding").text(boardingStation.stationName);
+            $("#cardDestination").text(destinationStation.stationName);
+        });
+
+        $("#searchBtn").click(() => {
+            if (!boardingStation || !destinationStation) {
+                showToast("Please configure both stations.", "warning");
+                return;
+            }
+            loadTimetable();
+        });
+
+        $("#refreshBtn").click(() => { if (boardingStation && destinationStation) loadTimetable(); });
+
+        $(document).on("click", ".view-route", function () {
+            const dutyID = $(this).data("id");
+            const routeModal = new bootstrap.Modal(document.getElementById('routeModal'));
+            routeModal.show();
+
+            $("#modalTripName, #modalVehicleNo").text("-");
+            $("#modalStopCount").text("0");
+            $("#modalLoadingRoute").show();
+            $("#modalTimeline").addClass("d-none").html("");
+
+            fetchRouteDetails(dutyID);
+        });
+    }
+
+    async function loadTimetable() {
+        showLoader();
+        const payload = {
+            boardingStationList: [{ stationID: boardingStation.stationID, stationName: boardingStation.stationName }],
+            destinationStationList: [{ stationID: destinationStation.stationID, stationName: destinationStation.stationName }]
+        };
+        try {
+            const response = await fetch(TIMETABLE_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: TOKEN },
+                body: JSON.stringify(payload)
+            });
+            const json = await response.json();
+            renderTable(json);
+            saveHistory();
+        } catch (e) {
+            showToast("Synchronization failure across database nodes.", "danger");
+        } finally {
+            hideLoader();
+        }
+    }
+
+    function renderTable(data) {
+        table.clear();
+        const trips = data.model || [];
+        $("#cardBus").text(trips.length);
+
+        trips.forEach(bus => {
+            table.row.add([
+                `<span class="badge-ui badge-time">${formatTime(bus.tripTime)}</span>`,
+                `<span class="fw-semibold">${bus.boardingStationName}</span>`,
+                `<span class="fw-semibold">${bus.destinationStationName}</span>`,
+                `<span class="text-muted font-sm">${bus.tripName || 'N/A'}</span>`,
+                `<strong class="text-dark">${bus.vehicleNumber || 'N/A'}</strong>`,
+                `<span class="badge-ui badge-type">${bus.vehicleType1 || 'Ordinary'}</span>`,
+                `<span class="badge-ui badge-depot">${bus.depotName}</span>`,
+                `<button class="btn btn-sm btn-primary py-1 px-3 view-route font-xs" data-id="${bus.dutyID}"><i class="bi bi-geo-alt-fill"></i> Track</button>`
+            ]);
+        });
+        table.draw();
+    }
+
+    async function fetchRouteDetails(dutyID) {
+        try {
+            const res = await fetch(ROUTE_API + dutyID, { headers: { Authorization: TOKEN } });
+            const json = await res.json();
+            $("#modalLoadingRoute").hide();
+
+            if (!json.model || json.model.length === 0) {
+                $("#modalTimeline").removeClass("d-none").html('<div class="text-center py-3">No tracking metadata registered.</div>');
+                return;
+            }
+            renderModalTimeline(json.model);
+        } catch (err) {
+            $("#modalLoadingRoute").hide();
+            $("#modalTimeline").removeClass("d-none").html('<div class="text-center text-danger py-3">Error fetching tracking nodes.</div>');
+        }
+    }
+
+    function renderModalTimeline(data) {
+        const firstNode = data[0];
+        $("#modalTripName").text(firstNode.tripName || "Route Details");
+        $("#modalVehicleNo").text(firstNode.vehicleNumber || "N/A");
+        $("#modalStopCount").text(data.length);
+
+        let html = "";
+        data.forEach(stop => {
+            html += `
+        <div class="node-stop-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1 fw-bold text-dark font-sm">${stop.boardingStationName}</h6>
+                    <small class="text-muted font-xs">Sequence Point Matrix Stop #${stop.srNo}</small>
+                </div>
+                <span class="badge-ui badge-time">${formatTime(stop.tripTime)}</span>
+            </div>
+        </div>`;
+        });
+        $("#modalTimeline").html(html).removeClass("d-none");
+    }
+
+    function formatTime(dateTime) {
+        if(!dateTime) return "--:--";
+        const d = new Date(dateTime);
+        return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+    }
+
+    function showLoader() { $("#loadingOverlay").css("display", "flex"); }
+    function hideLoader() { $("#loadingOverlay").hide(); }
+
+    function showToast(message, type = "success") {
+        $(".toast-container").remove();
+        const alertClass = type === "danger" ? "bg-danger" : (type === "warning" ? "bg-warning text-dark" : "bg-success");
+        $("body").append(`
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 100000">
+            <div class="toast align-items-center text-white ${alertClass} border-0 shadow" role="alert" data-bs-delay="3000">
+                <div class="d-flex">
+                    <div class="toast-body fw-semibold font-sm">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+    `);
+        new bootstrap.Toast(document.querySelector(".toast")).show();
+    }
+
+    function saveHistory() {
+        if (!boardingStation || !destinationStation) return;
+        let history = JSON.parse(localStorage.getItem("history")) || [];
+        history.unshift({ boarding: boardingStation, destination: destinationStation, date: new Date().toLocaleString() });
+        localStorage.setItem("history", JSON.stringify(history.slice(0, 10)));
+    }
+
+    window.addEventListener("offline", () => showToast("Offline network mode detected.", "danger"));
+    window.addEventListener("online", () => showToast("Device is back online.", "success"));
+</script>
+</body>
+</html>

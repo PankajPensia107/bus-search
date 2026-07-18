@@ -1,0 +1,16 @@
+{
+  "name": "Haryana Roadways Transit Timetable Manager",
+  "short_name": "HR Roadways",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1042/1042263.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
