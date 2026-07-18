@@ -540,6 +540,95 @@
                 margin: 12px auto 8px auto;
             }
         }
+
+        /* Base Fullscreen Structural Overrides */
+        .bottom-sheet-modal {
+            padding-right: 0px !important;
+        }
+
+        .bottom-sheet-modal .modal-content {
+            background: var(--card) !important;
+            border: none !important;
+            border-radius: 0px !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bottom-sheet-modal .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth Mobile Scroll Acceleration */
+            padding-bottom: calc(30px + env(safe-area-inset-bottom)) !important; /* Touch Bottom Bar Guard */
+        }
+
+        .max-width-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-top: 10px;
+            width: 100%;
+        }
+
+        /* Timeline Components Optimization */
+        .node-stop-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+
+        .node-stop-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--success);
+        }
+
+        /* Responsive Device Display Strategy Matrix */
+        @media (min-width: 577px) {
+            .bottom-sheet-modal .modal-dialog {
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                min-height: 100vh !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .bottom-sheet-modal .modal-dialog {
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 100vh !important;
+                height: 100% !important;
+            }
+
+            .bottom-sheet-modal .modal-header {
+                padding-top: calc(12px + env(safe-area-inset-top)) !important; /* iOS Notch/Island safe space padding */
+            }
+
+            .node-stop-card {
+                padding: 14px 16px;
+                margin-bottom: 12px;
+            }
+
+            .node-stop-card h6 {
+                font-size: 0.85rem !important;
+            }
+
+            .node-stop-card small {
+                font-size: 0.7rem !important;
+            }
+        }
+
+        /* Fixes for dark mode stability inside Timeline Grid */
+        body.dark .node-stop-card {
+            background: #1b263b;
+        }
     </style>
 </head>
 <body>
@@ -673,12 +762,14 @@
             <!-- Mobile Navigation Drag Indicator -->
             <div class="drawer-handle d-md-none" data-bs-dismiss="modal"></div>
 
-            <div class="modal-header border-0 px-4 pt-3 pb-3 bg-light-gray">
-                <h5 class="modal-title fw-800 d-flex align-items-center text-dark-theme">
+            <div class="modal-header border-0 px-4 pt-3 pb-3 bg-light-gray d-flex align-items-center justify-content-between">
+                <h5 class="modal-title fw-800 d-flex align-items-center text-dark-theme mb-0">
                     <i class="bi bi-signpost-split-fill me-2 text-success"></i> Fleet Route Canvas
                 </h5>
-                <!-- Desktop Visible Native Close Action Button -->
-                <button type="button" class="btn-close text-dark-theme" data-bs-dismiss="modal" aria-label="Close"></button>
+                <!-- Responsive Dynamic Native Close Action Trigger -->
+                <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1.5 rounded-3 d-flex align-items-center font-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i> Close
+                </button>
             </div>
 
             <div class="modal-body px-4 py-4">
